@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Leveling System | لوحة عاهل الظلال</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <style>
+        :root {
+            /* Solo Leveling Core Palette */
+            --sys-cyan: #00f0ff;
+            --sys-cyan-glow: rgba(0, 240, 255, 0.6);
+            --sys-purple: #9d4edd;
+            --sys-purple-glow: rgba(157, 78, 221, 0.4);
+            --sys-bg-dark: #02040a;
+            --sys-panel: rgba(5, 10, 25, 0.85);
+            --sys-panel-solid: #0a0f1e;
+            --sys-border: rgba(0, 240, 255, 0.3);
+            --sys-text: #e2e8f0;
+            --sys-text-muted: #94a3b8;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-monarch: 0 0 30px rgba(0, 240, 255, 0.15);
+        }
+
+        /* Light Mode Variables */
+        body.light-mode {
+            --sys-bg-dark: #f0f4f8;
+            --sys-panel: rgba(255, 255, 255, 0.92);
+            --sys-panel-solid: #ffffff;
+            --sys-text: #0f172a;
+            --sys-text-muted: #475569;
+            --sys-border: rgba(0, 102, 204, 0.3);
+            --sys-cyan: #0066cc;
+            --sys-cyan-glow: rgba(0, 102, 204, 0.3);
+            --sys-purple: #7c3aed;
+            --sys-purple-glow: rgba(124, 58, 237, 0.3);
+            --shadow-monarch: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--sys-bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 50%, var(--sys-cyan-glow) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, var(--sys-purple-glow) 0%, transparent 25%);
+            color: var(--sys-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-attachment: fixed;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        body.light-mode {
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0,102,204,0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(124,58,237,0.08) 0%, transparent 25%);
+        }
+
+        .sys-font { font-family: 'Rajdhani', sans-serif; letter-spacing: 0.05em; }
+
+        /* The iconic Solo Leveling Panel */
+        .sl-panel {
+            background: var(--sys-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--sys-border);
+            box-shadow: var(--shadow-monarch), inset 0 0 20px rgba(0, 240, 255, 0.05);
+            position: relative;
+            transition: var(--transition);
+        }
+        
+        body.light-mode .sl-panel {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08), inset 0 0 20px rgba(0, 102, 204, 0.03);
+        }
+
+        /* Decorative Corners */
+        .sl-panel::before, .sl-panel::after {
+            content: ''; position: absolute; width: 15px; height: 15px;
+            border: 2px solid var(--sys-cyan); pointer-events: none;
+            transition: var(--transition);
+        }
+        .sl-panel::before { top: -1px; left: -1px; border-bottom: none; border-right: none; }
+        .sl-panel::after { bottom: -1px; right: -1px; border-top: none; border-left: none; }
+
+        .sl-glow-text {
+            color: var(--sys-cyan);
+            text-shadow: 0 0 8px var(--sys-cyan-glow);
+        }
+        
+        body.light-mode .sl-glow-text {
+            text-shadow: none;
+        }
+
+        .sl-btn {
+            background: linear-gradient(135deg, rgba(0,240,255,0.1) 0%, rgba(157,78,221,0.1) 100%);
+            border: 1px solid var(--sys-cyan);
+            box-shadow: 0 0 10px rgba(0,240,255,0.2);
+            transition: var(--transition);
+            color: var(--sys-text);
+        }
+        .sl-btn:hover {
+            box-shadow: 0 0 20px rgba(0,240,255,0.5);
+            background: rgba(0,240,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        body.light-mode .sl-btn {
+            background: linear-gradient(135deg, rgba(0,102,204,0.08) 0%, rgba(124,58,237,0.08) 100%);
+            border: 1px solid var(--sys-cyan);
+        }
+        body.light-mode .sl-btn:hover {
+            background: rgba(0,102,204,0.15);
+        }
+
+        .xp-bar-container {
+            clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--sys-cyan);
+        }
+        
+        body.light-mode .xp-bar-container {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sys-cyan), var(--sys-purple));
+            width: 0%;
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 15px var(--sys-cyan);
+        }
+
+        /* Task Cards - Boss Quest Style */
+        .task-card {
+            border-right: 4px solid #e11d48;
+            background: linear-gradient(90deg, rgba(225,29,72,0.08) 0%, transparent 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .task-card::before {
+            content: 'BOSS';
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(225,29,72,0.3);
+            letter-spacing: 2px;
+        }
+        .task-card.completed {
+            opacity: 0.4; 
+            filter: grayscale(1); 
+            border-color: #475569;
+        }
+        .task-card.completed::before {
+            content: 'CLEARED';
+            color: #10b981;
+        }
+
+        /* Attribute Bars */
+        .attr-bar-bg {
+            background: rgba(0,0,0,0.3);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        body.light-mode .attr-bar-bg {
+            background: rgba(0,0,0,0.1);
+        }
+        .attr-bar-fill {
+            height: 100%;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Skills */
+        .skill-card {
+            border: 1px solid var(--sys-border);
+            background: rgba(0,0,0,0.2);
+            transition: var(--transition);
+            opacity: 0.4;
+            filter: grayscale(0.8);
+        }
+        .skill-card.unlocked {
+            opacity: 1;
+            filter: grayscale(0);
+            background: rgba(0,240,255,0.05);
+            box-shadow: 0 0 15px rgba(0,240,255,0.1);
+        }
+        body.light-mode .skill-card.unlocked {
+            background: rgba(0,102,204,0.05);
+            box-shadow: 0 0 15px rgba(0,102,204,0.1);
+        }
+
+        /* System Modal Animation */
+        @keyframes systemPopIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); filter: brightness(2); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+        }
+        .animate-system-pop { animation: systemPopIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        /* Magic Circle */
+        .magic-circle {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 150%; height: 150%; border: 1px dashed rgba(157, 78, 221, 0.3);
+            border-radius: 50%; animation: rotate 30s linear infinite; pointer-events: none;
+        }
+        @keyframes rotate { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* Alarm Pulse */
+        @keyframes alarmPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+        }
+        .alarm-active { animation: alarmPulse 1s infinite; border-color: #e11d48 !important; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--sys-cyan); }
+
+        /* Table */
+        .sys-table th { 
+            background: rgba(0, 240, 255, 0.1); 
+            border-bottom: 1px solid var(--sys-cyan); 
+            color: var(--sys-cyan); 
+        }
+        .sys-table td { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        body.light-mode .sys-table td { border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+        /* Fixed Controls */
+        .fixed-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--sys-panel);
+            border: 1px solid var(--sys-border);
+            color: var(--sys-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 18px;
+        }
+        .control-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--sys-cyan-glow);
+        }
+
+        /* Clock Display */
+        .main-clock {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.1em;
+        }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--sys-panel);
+            border: 1px solid var(--sys-cyan);
+            border-right: 4px solid var(--sys-cyan);
+            padding: 16px 24px;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(150%);
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 200;
+            max-width: 400px;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast-title { color: var(--sys-cyan); font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 12px; margin-bottom: 4px; letter-spacing: 0.1em; }
+        .toast-body { color: var(--sys-text); font-size: 14px; font-weight: 600; line-height: 1.5; }
+
+        /* Alarm Item */
+        .alarm-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border: 1px solid var(--sys-border);
+            margin-bottom: 8px;
+            background: rgba(0,0,0,0.2);
+        }
+        body.light-mode .alarm-item {
+            background: rgba(0,0,0,0.03);
+        }
+    </style>
+</head>
+<body class="p-2 md:p-6 relative">
+
+    <!-- Fixed Controls: Theme & Language -->
+    <div class="fixed-controls">
+        <button onclick="SystemControls.toggleTheme()" class="control-btn" title="تبديل الوضع">
+            <span id="themeIcon">🌙</span>
+        </button>
+        <button onclick="SystemControls.toggleLang()" class="control-btn" title="تبديل اللغة">
+            <span id="langIcon">EN</span>
+        </button>
+    </div>
+
+    <div class="max-w-[1400px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-6 relative z-10">
+        
+        <!-- SIDEBAR: Player Status & Attributes -->
+        <aside class="xl:col-span-3 space-y-6">
+            <!-- Profile Panel -->
+            <div class="sl-panel p-6 text-center overflow-hidden">
+                <div class="magic-circle"></div>
+                
+                <div class="relative z-10">
+                    <div class="sys-font text-xs text-[var(--sys-cyan)] mb-1 uppercase tracking-widest" data-i18n="player">Player</div>
+                    <h2 class="text-2xl font-black tracking-tight text-[var(--sys-text)] drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                        AISSAOUI MOHAMAD <br><span class="text-lg">عيساوي</span>
+                    </h2>
+                    
+                    <div class="my-4 border-y border-[var(--sys-cyan)] py-2 bg-[var(--sys-cyan-glow)] bg-opacity-10">
+                        <div class="sys-font text-2xl font-bold sl-glow-text">LEVEL: <span id="currentLevel">1</span></div>
+                        <div class="text-xs font-bold text-[var(--sys-text-muted)]" data-i18n="currentLevel">المستوى الحالي</div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="sys-font text-[10px] text-[var(--sys-purple)] uppercase tracking-widest" data-i18n="jobClass">Job Class</div>
+                        <div class="font-black text-[var(--sys-text)] text-lg">Shadow Monarch</div>
+                        <div class="text-xs text-[var(--sys-text-muted)]" data-i18n="shadowMonarch">عاهل الظلال</div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div class="flex justify-between sys-font text-xs font-bold mb-1 text-[var(--sys-cyan)]">
+                            <span>EXP</span>
+                            <span id="xpText">0 / 100</span>
+                        </div>
+                        <div class="xp-bar-container w-full h-3">
+                            <div id="xpBar" class="xp-bar-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attributes Panel -->
+            <div class="sl-panel p-5">
+                <div class="sys-font text-[10px] text-[var(--sys-cyan)] mb-4 uppercase tracking-widest text-center border-b border-[var(--sys-border)] pb-2" data-i18n="attributes">السمات | ATTRIBUTES</div>
+                <div class="space-y-3" id="attributesContainer">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Skills Panel -->
+            <div class="sl-panel p-5">
+                <div class="sys-font text-[10px] text-[var(--sys-purple)] mb-4 uppercase tracking-widest text-center border-b border-[var(--sys-border)] pb-2" data-i18n="skills">المهارات | SKILLS</div>
+                <div class="space-y-2 max-h-[300px] overflow-y-auto" id="skillsContainer">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- System Message / Motivation -->
+            <div class="sl-panel p-5 group border-r-4 border-r-[var(--sys-purple)]">
+                <div class="sys-font text-[10px] sl-glow-text mb-2 uppercase flex justify-between">
+                    <span data-i18n="systemMsg">System Message</span>
+                    <span>رسالة النظام</span>
+                </div>
+                <p id="motivationalQuote" class="text-sm leading-relaxed text-[var(--sys-text)] transition-all duration-700 min-h-[80px] font-medium border-l-2 border-[var(--sys-purple)] pl-3">
+                    [جارِ تحليل الميثاق...]
+                </p>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="sl-panel p-2 space-y-1">
+                <div class="sys-font text-[10px] text-[var(--sys-text-muted)] px-3 pt-2 pb-1 uppercase tracking-widest" data-i18n="questLogs">Quest Logs</div>
+                
+                <button onclick="Router.navigate('all')" id="nav-all" class="nav-btn w-full flex items-center justify-between p-4 bg-[var(--sys-cyan)] bg-opacity-10 text-[var(--sys-cyan)] border border-[var(--sys-cyan)] font-bold transition-all">
+                    <span data-i18n="allQuests">📚 كل المهام (All)</span>
+                    <span class="sys-font" id="cnt-all">0</span>
+                </button>
+                <button onclick="Router.navigate('active')" id="nav-active" class="nav-btn w-full flex items-center justify-between p-4 text-[var(--sys-text-muted)] hover:bg-white/5 font-bold transition-all">
+                    <span data-i18n="activeQuests">⚔️ المهام النشطة (Active)</span>
+                    <span class="sys-font" id="cnt-active-val">0</span>
+                </button>
+                <button onclick="Router.navigate('charter')" id="nav-charter" class="nav-btn w-full flex items-center justify-between p-4 text-[var(--sys-purple)] hover:bg-[var(--sys-purple)] hover:bg-opacity-10 font-black transition-all">
+                    <span data-i18n="systemCharter">📜 الميثاق العملياتي (System)</span>
+                    <span class="sys-font">∞</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- MAIN AREA -->
+        <main class="xl:col-span-9 space-y-6 flex flex-col h-full">
+            
+            <!-- Top Bar: Environment Status -->
+            <div class="sl-panel p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="sys-font text-[10px] absolute -top-2 left-4 bg-[var(--sys-bg-dark)] px-2 text-[var(--sys-cyan)]" data-i18n="envStatus">ENVIRONMENT STATUS</div>
+                
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl opacity-80">⏳</span>
+                        <div>
+                            <div id="realTime" class="sys-font font-bold text-xl text-[var(--sys-text)] tracking-widest main-clock">--:--:--</div>
+                            <div id="realDate" class="sys-font text-[10px] text-[var(--sys-cyan)] uppercase tracking-widest">--/--/----</div>
+                        </div>
+                    </div>
+                    <div class="h-8 w-px bg-[var(--sys-cyan)] opacity-30 hidden md:block"></div>
+                    <div class="flex items-center gap-2">
+                        <span id="seasonIcon" class="text-2xl drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">🌍</span>
+                        <div>
+                            <div id="seasonText" class="font-bold text-[var(--sys-text)] text-sm">جاري التحديد</div>
+                            <div class="sys-font text-[10px] text-[var(--sys-text-muted)] uppercase" data-i18n="season">Season</div>
+                        </div>
+                    </div>
+                    <div class="h-8 w-px bg-[var(--sys-cyan)] opacity-30 hidden md:block"></div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">📍</span>
+                        <div>
+                            <div id="locationText" class="font-bold text-[var(--sys-text)] text-sm">جاري التحديد</div>
+                            <div class="sys-font text-[10px] text-[var(--sys-text-muted)] uppercase" data-i18n="location">Location</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-6 bg-black/40 px-6 py-2 border border-[var(--sys-cyan)] border-opacity-30 clip-edges">
+                    <div class="text-center">
+                        <div id="weatherTemp" class="sys-font font-bold text-[var(--sys-cyan)] text-lg drop-shadow-[0_0_5px_var(--sys-cyan)]">--°C</div>
+                        <div class="text-[9px] font-black text-[var(--sys-text-muted)] uppercase" data-i18n="temp">الحرارة</div>
+                    </div>
+                    <div class="h-6 w-px bg-[var(--sys-purple)] opacity-50"></div>
+                    <div class="text-center">
+                        <div id="weatherHum" class="sys-font font-bold text-[var(--sys-purple)] text-lg drop-shadow-[0_0_5px_var(--sys-purple)]">--%</div>
+                        <div class="text-[9px] font-black text-[var(--sys-text-muted)] uppercase" data-i18n="humidity">الرطوبة</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alarm & Timer Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Timer -->
+                <div id="timerContainer" class="sl-panel px-6 py-3 md:py-4 flex items-center gap-6 justify-between border-l-4 border-l-[var(--sys-cyan)]">
+                    <div class="text-right flex-grow">
+                        <div class="flex items-center gap-2 mb-1 justify-end">
+                            <span class="sys-font text-[10px] uppercase tracking-[0.2em] text-[var(--sys-cyan)]" data-i18n="questTimer">Quest Time Limit</span>
+                            <span id="timerStatus" class="sys-font text-[9px] px-2 py-0.5 bg-slate-800 border border-slate-600 text-slate-300 uppercase">Idle</span>
+                        </div>
+                        <span id="timerDisplay" class="sys-font text-4xl font-bold text-[var(--sys-text)] tracking-widest drop-shadow-[0_0_10px_rgba(0,240,255,0.5)] main-clock">05:00:00</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="Pomodoro.toggle()" id="timerBtn" class="sl-btn w-12 h-12 flex items-center justify-center text-xl">▶️</button>
+                        <button onclick="Pomodoro.reset()" class="bg-black/50 border border-white/10 hover:border-white/30 text-[var(--sys-text)] w-12 h-12 flex items-center justify-center transition-all text-xl">🔄</button>
+                        <button onclick="UI.toggleTimerSettings()" class="bg-black/50 border border-white/10 hover:border-[var(--sys-cyan)] text-[var(--sys-text)] w-12 h-12 flex items-center justify-center transition-all text-xl" title="إعداد المؤقت">⚙️</button>
+                    </div>
+                </div>
+
+                <!-- Alarm -->
+                <div class="sl-panel px-6 py-3 md:py-4 flex items-center gap-4 justify-between border-r-4 border-r-rose-500">
+                    <div class="flex-grow">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="sys-font text-[10px] uppercase tracking-[0.2em] text-rose-400" data-i18n="alarmSystem">System Alarm</span>
+                            <span id="alarmStatus" class="sys-font text-[9px] px-2 py-0.5 bg-slate-800 border border-slate-600 text-slate-300 uppercase">OFF</span>
+                        </div>
+                        <div id="nextAlarmDisplay" class="sys-font text-lg font-bold text-[var(--sys-text)]" data-i18n="noAlarm">لا يوجد منبه نشط</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="Alarm.togglePanel()" class="sl-btn w-12 h-12 flex items-center justify-center text-xl border-rose-500 text-rose-400 hover:bg-rose-500/20">⏰</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header -->
+            <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                <div>
+                    <div class="sys-font text-xs text-[var(--sys-cyan)] tracking-[0.3em] uppercase mb-1" data-i18n="centralCmd">Central Command</div>
+                    <h1 class="text-3xl md:text-4xl font-black text-[var(--sys-text)] drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" data-i18n="opsRoom">
+                        غرفة العمليات المركزية
+                    </h1>
+                    <p class="text-[var(--sys-purple)] mt-1 font-bold text-sm" id="greetingText">مرحباً بك أيها القائد</p>
+                </div>
+            </header>
+
+            <!-- Stats -->
+            <section id="statsSection" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="sl-panel p-5 border-t-2 border-t-[var(--sys-cyan)] bg-gradient-to-b from-[rgba(0,240,255,0.05)] to-transparent">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[var(--sys-text-muted)] text-xs font-black" data-i18n="authority">النفوذ المكتسب</span>
+                        <span class="sys-font text-[10px] text-[var(--sys-cyan)]">AUTHORITY (PT)</span>
+                    </div>
+                    <div class="sys-font text-3xl font-bold text-[var(--sys-text)] sl-glow-text" id="stat-weight">0</div>
+                </div>
+                <div class="sl-panel p-5 border-t-2 border-t-[var(--sys-purple)] bg-gradient-to-b from-[rgba(157,78,221,0.05)] to-transparent">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[var(--sys-text-muted)] text-xs font-black" data-i18n="lethality">معدل الفتك بالأهداف</span>
+                        <span class="sys-font text-[10px] text-[var(--sys-purple)]">LETHALITY (%)</span>
+                    </div>
+                    <div class="sys-font text-3xl font-bold text-[var(--sys-text)] drop-shadow-[0_0_8px_var(--sys-purple)]" id="stat-percent">0%</div>
+                </div>
+                <div class="sl-panel p-5 border-t-2 border-t-emerald-500 bg-gradient-to-b from-[rgba(16,185,129,0.05)] to-transparent">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[var(--sys-text-muted)] text-xs font-black" data-i18n="totalExp">الرصيد المعرفي التراكمي</span>
+                        <span class="sys-font text-[10px] text-emerald-400">TOTAL EXP</span>
+                    </div>
+                    <div class="sys-font text-3xl font-bold text-[var(--sys-text)] drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" id="stat-xp">0</div>
+                </div>
+            </section>
+
+            <!-- Regular Tasks View -->
+            <div id="tasksView" class="flex flex-col flex-grow space-y-6">
+                <!-- Task Input - Boss Only -->
+                <section class="sl-panel p-2 flex flex-wrap gap-2 items-center focus-within:border-[var(--sys-cyan)] transition-colors border-t-4 border-t-rose-500">
+                    <div class="sys-font text-[10px] text-rose-400 absolute -top-2 right-4 bg-[var(--sys-bg-dark)] px-2 uppercase tracking-widest" data-i18n="bossQuest">Boss Quest</div>
+                    <input type="text" id="taskInput" placeholder="أدخل هدف الزعيم (Boss Quest)..." class="flex-grow bg-transparent border-none outline-none px-6 py-4 text-lg font-medium placeholder:text-slate-600 text-[var(--sys-text)]">
+                    <div class="flex gap-2 p-2 w-full md:w-auto">
+                        <select id="prioritySelect" class="bg-[var(--sys-bg-dark)] sys-font font-bold px-4 py-2 border border-rose-500 border-opacity-50 outline-none text-rose-400">
+                            <option value="high" selected>S-RANK (زعيم)</option>
+                            <option value="medium">A-RANK (نخبة)</option>
+                            <option value="low">B-RANK (فرعي)</option>
+                        </select>
+                        <button onclick="Actions.addTask()" class="sl-btn px-8 py-3 font-black text-xs text-white uppercase tracking-widest border-rose-500 bg-rose-500/10 hover:bg-rose-500/20" data-i18n="add">إضافة</button>
+                    </div>
+                </section>
+
+                <!-- Task Container -->
+                <div id="taskContainer" class="space-y-3 pb-10 flex-grow overflow-y-auto">
+                    <!-- Tasks injected here -->
+                </div>
+            </div>
+
+            <!-- SYSTEM CHARTER VIEW -->
+            <div id="charterView" class="hidden flex-col flex-grow sl-panel p-6 overflow-y-auto h-[600px] border-2 border-[var(--sys-purple)]">
+                <div class="text-center mb-8 border-b border-[var(--sys-purple)] pb-4">
+                    <div class="sys-font text-[var(--sys-cyan)] tracking-[0.5em] text-sm mb-2">SYSTEM INTEGRATED CHARTER</div>
+                    <h2 class="text-3xl font-black text-[var(--sys-text)] drop-shadow-[0_0_10px_var(--sys-purple)]">الميثاق العملياتي المتكامل</h2>
+                    <p class="text-[var(--sys-text-muted)] mt-2 text-sm font-bold">النسخة النهائية - تم تفعيل نظام "الألعاب الذهنية" والترابط العصبي.</p>
+                </div>
+
+                <div class="space-y-10 text-sm">
+                    <section>
+                        <h3 class="text-xl font-bold text-[var(--sys-cyan)] mb-4 flex items-center gap-2"><span class="text-2xl">⚡</span> أولاً: نظام التبادل الروحاني (05:00 - 06:00)</h3>
+                        <div class="bg-black/50 p-4 border-l-2 border-[var(--sys-cyan)]">
+                            <ul class="space-y-3 text-[var(--sys-text)]">
+                                <li><strong class="text-[var(--sys-purple)]">الأيام الوترية (أحد، ثلاثاء، خميس):</strong> ورد تدبر + تكرار ومراجعة لما سبق.</li>
+                                <li><strong class="text-[var(--sys-purple)]">الأيام الزوجية (إثنين، أربعاء، سبت):</strong> حفظ جديد + ورد تدبر.</li>
+                                <li><strong class="text-[var(--sys-purple)]">يوم الجمعة:</strong> قراءة سورة الكهف فقط (استراحة ذهنية).</li>
+                            </ul>
+                        </div>
+                    </section>
+                    
+                    <section>
+                        <h3 class="text-xl font-bold text-[var(--sys-cyan)] mb-4 flex items-center gap-2"><span class="text-2xl">📅</span> ثانياً: الجدول اليومي الموحد</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right sys-table text-[var(--sys-text)]">
+                                <thead>
+                                    <tr>
+                                        <th class="p-3 sys-font">التوقيت (TIME)</th>
+                                        <th class="p-3">النشاط (QUEST)</th>
+                                        <th class="p-3">التفاصيل والهدف</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="p-3 sys-font font-bold">05:00 - 06:00</td><td class="p-3 font-bold text-[var(--sys-text)]">الكتلة الروحية</td><td class="p-3">ورد القرآن + الفجر وأذكار + تمدد إطالة</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold text-[var(--sys-cyan)]">06:00 - 08:30</td><td class="p-3 font-bold text-[var(--sys-cyan)]">البرمجة العميقة</td><td class="p-3">مشروع AiMoha (Python/JS)</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold text-[var(--sys-purple)]">08:30 - 10:30</td><td class="p-3 font-bold text-[var(--sys-purple)]">أكاديمية AI</td><td class="p-3">كورسات (ML, LLMs) وتطبيق خوارزميات</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold">10:30 - 12:00</td><td class="p-3 font-bold text-[var(--sys-text)]">إتقان الإنجليزية</td><td class="p-3">انغماس تقني + بناء مفردات + Shadowing</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold text-slate-500">12:00 - 13:00</td><td class="p-3 font-bold text-[var(--sys-text-muted)]">الاستراحة الكبرى</td><td class="p-3">الظهر + غداء بروتيني</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold text-emerald-400">13:00 - 15:00</td><td class="p-3 font-bold text-emerald-400">المعمل التطبيقي</td><td class="p-3">مشاريع AI واقعية وربطها بالبرمجيات</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold text-rose-400">15:00 - 16:30</td><td class="p-3 font-bold text-rose-400">PPL المطور</td><td class="p-3">دفع، سحب، أرجل + كالستينيكس</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold">17:30 - 19:30</td><td class="p-3 font-bold text-amber-400">العلوم التجريبية</td><td class="p-3">رياضيات، فيزياء، علوم (تركيز أكاديمي)</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold">19:30 - 20:30</td><td class="p-3 font-bold text-amber-400">ساعة النشاط والوجبة</td><td class="p-3">صلاة المغرب +الشيخ الرسلان+ عشاء خفيف + الرياضة الخارجية المحددة.</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold text-sky-400">20:30 - 21:30</td><td class="p-3 font-bold text-sky-400">الارتقاء الذهني و البدني</td><td class="p-3">كتب، وثائقيات + الألعاب الذهنية +الرياضة البدنية</td></tr>
+                                    <tr><td class="p-3 sys-font font-bold text-sky-400">21:30 - 22:00</td><td class="p-3 font-bold text-sky-400">تجهيز النظام + النوم العميق</td><td class="p-3">تخطيط الغد + أذكار النوم + إيقاف كامل للأنظمة لبدء الاستشفاء العضلي والذهني</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="text-xl font-bold text-[var(--sys-purple)] mb-4 flex items-center gap-2"><span class="text-2xl">🧠</span> ثالثاً: الألعاب الذهنية والرياضة البدنية</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-black/40 p-4 border border-[var(--sys-cyan)]/30">
+                                <h4 class="font-bold text-[var(--sys-cyan)] mb-2">الألعاب الذهنية (الاستراتيجية)</h4>
+                                <ul class="space-y-2 text-[var(--sys-text)]">
+                                    <li>♟️ <strong>الشطرنج (الإثنين):</strong> تفكير مستقبلي، يخدم خوارزميات AI.</li>
+                                    <li>🔢 <strong>سودوكو (الأربعاء):</strong> منطق واستنتاج، أساسي لتنقيح الأكواد (Debugging).</li>
+                                    <li>🧠 <strong>Dual N-Back (الجمعة):</strong> تقوية الذاكرة العاملة والذكاء السائل.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-black/40 p-4 border border-[var(--sys-purple)]/30">
+                                <h4 class="font-bold text-[var(--sys-purple)] mb-2">الرياضة ونظام PPL</h4>
+                                <ul class="space-y-2 text-[var(--sys-text)]">
+                                    <li>🏀 <strong>الأحد والثلاثاء:</strong> كرة سلة + Push (صدر + أكتاف) / Pull (ظهر + بيسابس).</li>
+                                    <li>🥊 <strong>الإثنين:</strong> مواي تاي + Legs (أفخاذ + سمانة).</li>
+                                    <li>⚽ <strong>الأربعاء والسبت:</strong> كرة قدم + Pull (ظهر + بيسابس) / سكس باك Abs . تراي Triceps.</li>
+                                    <li>🥋 <strong>الخميس:</strong> جيجيتسو (BJJ) + سكس باك Abs . تراي Triceps .</li>
+                                    <li>🚶 <strong>الجمعة:</strong>  مشي هادئ + Push (صدر + أكتاف).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Timer Settings Modal -->
+    <div id="timerModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-sm transition-opacity">
+        <div class="sl-panel p-8 w-full max-w-sm mx-4">
+            <h3 class="sys-font text-xl font-black text-[var(--sys-cyan)] mb-6 text-center uppercase tracking-widest border-b border-white/10 pb-4" data-i18n="setTimer">Set Quest Timer</h3>
+            <div class="flex justify-center gap-6 mb-8 text-center">
+                <div>
+                    <label class="block text-[10px] font-bold text-[var(--sys-text-muted)] uppercase tracking-widest mb-2" data-i18n="hours">Hours</label>
+                    <input type="number" id="inputHours" min="0" max="23" value="5" class="w-20 bg-black/50 border border-[var(--sys-cyan)] py-3 text-center text-2xl sys-font text-[var(--sys-text)] outline-none focus:shadow-[0_0_15px_var(--sys-cyan)]">
+                </div>
+                <div class="text-3xl text-[var(--sys-cyan)] font-bold self-center pt-4">:</div>
+                <div>
+                    <label class="block text-[10px] font-bold text-[var(--sys-text-muted)] uppercase tracking-widest mb-2" data-i18n="minutes">Minutes</label>
+                    <input type="number" id="inputMinutes" min="0" max="59" value="0" class="w-20 bg-black/50 border border-[var(--sys-cyan)] py-3 text-center text-2xl sys-font text-[var(--sys-text)] outline-none focus:shadow-[0_0_15px_var(--sys-cyan)]">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="Pomodoro.saveSettings()" class="flex-1 sl-btn text-[var(--sys-text)] font-bold py-3 uppercase sys-font tracking-widest" data-i18n="confirm">Confirm</button>
+                <button onclick="UI.toggleTimerSettings()" class="flex-1 bg-transparent border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white font-bold py-3 transition-colors uppercase sys-font" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alarm Panel Modal -->
+    <div id="alarmModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-sm">
+        <div class="sl-panel p-8 w-full max-w-md mx-4">
+            <h3 class="sys-font text-xl font-black text-rose-400 mb-6 text-center uppercase tracking-widest border-b border-white/10 pb-4" data-i18n="alarmSettings">System Alarm Settings</h3>
+            
+            <div class="flex gap-2 mb-4">
+                <input type="time" id="alarmTimeInput" class="flex-grow bg-black/50 border border-rose-500/50 py-3 px-4 sys-font text-[var(--sys-text)] outline-none">
+                <input type="text" id="alarmLabelInput" placeholder="وصف المنبه..." class="flex-grow bg-black/50 border border-rose-500/30 py-3 px-4 text-[var(--sys-text)] outline-none placeholder:text-slate-600">
+                <button onclick="Alarm.add()" class="sl-btn px-4 py-2 border-rose-500 text-rose-400 font-bold" data-i18n="add">إضافة</button>
+            </div>
+            
+            <div id="alarmList" class="max-h-[300px] overflow-y-auto mb-6 space-y-2">
+                <!-- Alarms injected here -->
+            </div>
+            
+            <button onclick="Alarm.togglePanel()" class="w-full bg-transparent border border-[var(--sys-text-muted)] text-[var(--sys-text-muted)] hover:border-[var(--sys-cyan)] hover:text-[var(--sys-cyan)] font-bold py-3 transition-colors uppercase sys-font" data-i18n="close">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- Milestone Achievement Modal (LEVEL UP) -->
+    <div id="milestoneModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/90 backdrop-blur-md transition-opacity">
+        <div class="sl-panel p-1 border-2 border-[var(--sys-cyan)] w-full max-w-2xl mx-4 text-center animate-system-pop overflow-hidden shadow-[0_0_50px_rgba(0,240,255,0.4)]">
+            <div class="border border-[var(--sys-purple)] p-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CjxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgZmlsbD0ibm9uZSIvPgo8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiLz4KPC9zdmc+')]">
+                
+                <div class="sys-font text-[var(--sys-cyan)] tracking-[0.5em] mb-2 font-bold drop-shadow-[0_0_5px_var(--sys-cyan)]">SYSTEM NOTIFICATION</div>
+                
+                <h2 class="sys-font text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-[var(--sys-cyan)] mb-1 drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]">
+                    LEVEL UP
+                </h2>
+                <div class="text-[var(--sys-text)] font-bold mb-8 tracking-widest text-lg">
+                    لقد ارتقيت في المستوى!
+                </div>
+                
+                <div class="flex justify-center items-center gap-6 mb-8">
+                    <div class="sys-font text-4xl text-slate-500 line-through decoration-[var(--sys-purple)]" id="milestoneOldLevel">29</div>
+                    <span class="text-3xl text-[var(--sys-cyan)]">➤</span>
+                    <div class="sys-font text-6xl text-[var(--sys-cyan)] sl-glow-text font-black" id="milestoneLevelText">30</div>
+                </div>
+                
+                <div class="bg-black/50 border-l-4 border-[var(--sys-purple)] p-4 text-right mb-8">
+                    <p id="milestoneMessage" class="text-[var(--sys-cyan)] text-lg leading-relaxed font-bold">
+                        رسالة النظام التلقائية ستظهر هنا.
+                    </p>
+                </div>
+                
+                <div id="unlockedSkillBox" class="hidden mb-8 p-4 border border-[var(--sys-cyan)] bg-[var(--sys-cyan)] bg-opacity-5">
+                    <div class="sys-font text-xs text-[var(--sys-cyan)] uppercase tracking-widest mb-2">Skill Unlocked</div>
+                    <div id="unlockedSkillName" class="text-xl font-bold text-white"></div>
+                </div>
+                
+                <button onclick="Milestone.hide()" class="sl-btn text-[var(--sys-text)] font-black py-4 px-16 text-lg tracking-widest uppercase sys-font border-2">
+                    ACCEPT (متابعة)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="toast-title" id="toastTitle">SYSTEM</div>
+        <div class="toast-body" id="toastBody">Message here</div>
+    </div>
+
+    <script>
+        // ==================== TRANSLATIONS ====================
+        const i18n = {
+            ar: {
+                player: "Player", currentLevel: "المستوى الحالي", jobClass: "Job Class", shadowMonarch: "عاهل الظلال",
+                questLogs: "Quest Logs", allQuests: "📚 كل المهام (All)", activeQuests: "⚔️ المهام النشطة (Active)",
+                systemCharter: "📜 الميثاق العملياتي (System)", envStatus: "ENVIRONMENT STATUS",
+                season: "Season", location: "Location", temp: "الحرارة", humidity: "الرطوبة",
+                questTimer: "Quest Time Limit", alarmSystem: "System Alarm", noAlarm: "لا يوجد منبه نشط",
+                centralCmd: "Central Command", opsRoom: "غرفة العمليات المركزية",
+                authority: "النفوذ المكتسب", lethality: "معدل الفتك بالأهداف", totalExp: "الرصيد المعرفي التراكمي",
+                bossQuest: "Boss Quest", add: "إضافة", attributes: "السمات | ATTRIBUTES", skills: "المهارات | SKILLS",
+                systemMsg: "System Message", setTimer: "Set Quest Timer", hours: "Hours", minutes: "Minutes",
+                confirm: "Confirm", cancel: "Cancel", alarmSettings: "System Alarm Settings", close: "إغلاق",
+                noActiveQuests: "[NO ACTIVE QUESTS DETECTED]", rank: "RANK", exp: "EXP",
+                str: "القوة (STR)", agi: "الرشاقة (AGI)", int: "الذكاء (INT)", vit: "الحيوية (VIT)", foc: "التركيز (FOC)"
+            },
+            en: {
+                player: "Player", currentLevel: "Current Level", jobClass: "Job Class", shadowMonarch: "Shadow Monarch",
+                questLogs: "Quest Logs", allQuests: "📚 All Quests", activeQuests: "⚔️ Active Quests",
+                systemCharter: "📜 System Charter", envStatus: "ENVIRONMENT STATUS",
+                season: "Season", location: "Location", temp: "Temperature", humidity: "Humidity",
+                questTimer: "Quest Time Limit", alarmSystem: "System Alarm", noAlarm: "No active alarm",
+                centralCmd: "Central Command", opsRoom: "Central Operations Room",
+                authority: "Authority Gained", lethality: "Target Lethality", totalExp: "Total EXP",
+                bossQuest: "Boss Quest", add: "ADD", attributes: "ATTRIBUTES", skills: "SKILLS",
+                systemMsg: "System Message", setTimer: "Set Quest Timer", hours: "Hours", minutes: "Minutes",
+                confirm: "Confirm", cancel: "Cancel", alarmSettings: "Alarm Settings", close: "Close",
+                noActiveQuests: "[NO ACTIVE QUESTS DETECTED]", rank: "RANK", exp: "EXP",
+                str: "Strength (STR)", agi: "Agility (AGI)", int: "Intelligence (INT)", vit: "Vitality (VIT)", foc: "Focus (FOC)"
+            }
+        };
+
+        // ==================== MOTIVATIONAL FRAGMENTS (From User File) ====================
+        const WisdomFragments = [
+            { ar: "اجعل المصحف بوصلة عقلك، وقيام الليل وقود روحك؛ فمن اتصل بالخالق في السحر، خضعت له مصاعب النهار في المختبر والملعب.", en: "Make the Quran the compass of your mind, and Qiyam al-Layl the fuel of your soul." },
+            { ar: "لا تقبل بأن تكون رقماً عادياً؛ كن مبرمجاً بعقل فيلسوف، ومقاتلاً بقلب عابد، وطالباً بذكاء اصطناعي لا يعرف الكلل.", en: "Do not accept being an ordinary number; be a programmer with a philosopher's mind." },
+            { ar: "البكالوريا بالنسبة لك ليست نهاية طريق، بل هي 'تأشيرة عبور' نحو العالمية؛ ادرس بعقلية العالِم.", en: "The baccalaureate is not the end of the road, but a visa to globalism." },
+            { ar: "كل تكرار في 'الكالستينيكس' وكل جولة في 'المواي تاي' هي نحت للشخصية قبل العضلات؛ أنت لا تبني جسداً، بل تبني حصناً يسكنه بطل.", en: "Every rep in calisthenics and every round in Muay Thai sculpts character before muscles." },
+            { ar: "بينما يستهلك الآخرون التكنولوجيا، أنت تبنيها؛ اجعل أكواد Python وJS هي لغة نجاحك.", en: "While others consume technology, you build it. Make your code your language of success." },
+            { ar: "الالتزام بجدولك من الساعة 02:45 صباحاً هو الفرق بين من يحلم بالقمة وبين من يسكن فيها.", en: "Commitment to your schedule at 02:45 AM is the difference between dreaming and living at the peak." },
+            { ar: "دراستك للتوحيد ورياض الصالحين هي الأساس الذي يمنعك من السقوط مهما بلغت في علوم الدنيا.", en: "Your study of Tawhid and Riyad al-Salihin is the foundation that prevents your fall." },
+            { ar: "تعلم الشطرنج لتسبق خصومك بخطوتين، وتعلم البرمجة لتصنع قواعد اللعبة الخاصة بك.", en: "Learn chess to outpace opponents by two moves; learn programming to write your own rules." },
+            { ar: "اقرأ الكتب لتتحرر من قيود الجهل، وتعلم اللغات لتخاطب العالم بلسان ذلق.", en: "Read books to break free from ignorance; learn languages to speak to the world fluently." },
+            { ar: "النجاح ليس ضربة حظ، بل هو تراكم لورد القرآن، وكود البرمجة، وتمرين الجيم، ومراجعة الفيزياء.", en: "Success is not luck, but an accumulation of Quran, code, gym, and physics review." },
+            { ar: "قناتك على يوتيوب وكتبك الرقمية هي إرثك التقني؛ اجعل كل 'فريم' وكل كلمة تعكس شخصية 'الخبير'.", en: "Your YouTube channel and digital books are your technical legacy." },
+            { ar: "في الملعب أنت مهندس الهجمات، وفي الحلبة أنت إعصار 'المواي تاي'؛ اجعل رياضتك احترافاً.", en: "On the field you are the attack engineer; in the ring you are a Muay Thai hurricane." },
+            { ar: "الشخصية المثالية في علم النفس هي تلك التي تسيطر على غرائزها بالصيام، وعلى كسلها بالقيام.", en: "The ideal personality controls instincts with fasting and laziness with Qiyam." },
+            { ar: "ابنِ إمبراطوريتك المالية من 'مؤساد' لتصل إلى 'وادي السيليكون'؛ الجغرافيا لا تحد الطموح.", en: "Build your financial empire from M'sila to Silicon Valley; geography does not limit ambition." },
+            { ar: "عندما تستمع للشيخ الرسلان، تذكر أن الدقة في طلب العلم الشرعي هي ذاتها الدقة في 'تنقيح الأكواد'.", en: "When listening to Sheikh Raslan, remember precision in Sharia is the same as in debugging code." },
+            { ar: "عقلية 'العلوم التجريبية' تعلمك أن كل مشكلة لها حل، وكل فشل هو مجرد 'Bug' يحتاج إعادة برمجة.", en: "Experimental science teaches you every problem has a solution; every failure is just a bug." },
+            { ar: "الصيام والقيام والتدريب المكثف ليست قيوداً، بل هي 'تدريبات قوات خاصة' لروحك.", en: "Fasting, Qiyam, and intense training are not restrictions, but special forces training for your soul." },
+            { ar: "تخيل نفسك وأنت تتحدث الإنجليزية والفرنسية والسبانية بطلاقة في شوارع العالم؛ هذا الحلم يبدأ الآن.", en: "Imagine yourself speaking English, French, and Spanish fluently in world streets." },
+            { ar: "الشيء الذي يستحق أن يُعمل، يستحق أن يُعمل بإتقان؛ سواء حفظ آية، أو سطر برمجي، أو ركلة 'مواي تاي'.", en: "What is worth doing is worth doing with perfection: a verse, a line of code, or a kick." },
+            { ar: "أنا لست مجرد طالب؛ أنا مشروع 'إنسان متكامل'.. عقل ذكاء اصطناعي، وجسد مقاتل، وروح عابد، ومستقبل عالمي.", en: "I am not just a student; I am a project of a complete human: AI mind, fighter body, devoted soul." }
+        ];
+
+        // ==================== SKILLS DATABASE ====================
+        const SkillsDB = [
+            { id: 'shadow_march', name: 'Shadow March', nameAr: 'سير الظلال', level: 3, desc: 'القدرة على العمل لساعات طويلة دون كلل', descEn: 'Ability to work long hours without fatigue', attr: 'vit' },
+            { id: 'domain_focus', name: 'Domain of Focus', nameAr: 'مجال التركيز', level: 5, desc: 'التركيز العميق لمدة 3 ساعات متواصلة', descEn: 'Deep focus for 3 continuous hours', attr: 'foc' },
+            { id: 'arise', name: 'Arise', nameAr: 'قوم', level: 8, desc: 'إحياء الإرادة بعد كل سقوط', descEn: 'Reviving willpower after every fall', attr: 'str' },
+            { id: 'monarch_auth', name: "Monarch's Authority", nameAr: 'سلطة العاهل', level: 12, desc: 'السيطرة الكاملة على الجدول والوقت', descEn: 'Complete control over schedule and time', attr: 'agi' },
+            { id: 'rulers_hand', name: "Ruler's Hand", nameAr: 'يد الحاكم', level: 15, desc: 'إتقان البرمجة والذكاء الاصطناعي', descEn: 'Mastery of programming and AI', attr: 'int' },
+            { id: 'shadow_army', name: 'Shadow Army', nameAr: 'جيش الظلال', level: 20, desc: 'بناء فريق ومشاريع متعددة بكفاءة', descEn: 'Building teams and multiple projects efficiently', attr: 'str' },
+            { id: 'absolute_zero', name: 'Absolute Zero', nameAr: 'الصفر المطلق', level: 25, desc: 'الوصول لحالة التدفق الكامل Flow State', descEn: 'Reaching full Flow State', attr: 'foc' },
+            { id: 'worlds_monarch', name: 'Worlds Monarch', nameAr: 'عاهل العالمين', level: 30, desc: 'التحكم الكامل في مصيرك ووقتك', descEn: 'Full control of your destiny and time', attr: 'vit' }
+        ];
+
+        // ==================== ATTRIBUTES SYSTEM ====================
+        const AttributesSystem = {
+            attrs: { str: 10, agi: 10, int: 10, vit: 10, foc: 10 },
+            colors: { str: '#e11d48', agi: '#00f0ff', int: '#9d4edd', vit: '#10b981', foc: '#f59e0b' },
+            labels: { str: 'str', agi: 'agi', int: 'int', vit: 'vit', foc: 'foc' },
+            
+            init() {
+                const saved = localStorage.getItem('SL_SYS_ATTRS');
+                if (saved) this.attrs = JSON.parse(saved);
+                this.render();
+            },
+            
+            addPoints(priority) {
+                const pts = { high: 3, medium: 2, low: 1 };
+                const base = pts[priority] || 1;
+                // Distribute based on priority type (random weighted)
+                this.attrs.str += base;
+                this.attrs.agi += base;
+                this.attrs.int += Math.ceil(base * 1.5);
+                this.attrs.vit += base;
+                this.attrs.foc += Math.ceil(base * 1.2);
+                this.save();
+                this.render();
+            },
+            
+            save() {
+                localStorage.setItem('SL_SYS_ATTRS', JSON.stringify(this.attrs));
+            },
+            
+            render() {
+                const c = document.getElementById('attributesContainer');
+                if (!c) return;
+                c.innerHTML = '';
+                Object.keys(this.attrs).forEach(key => {
+                    const val = this.attrs[key];
+                    const max = 100 + (LevelSystem.getLevel() * 10);
+                    const pct = Math.min(100, (val / max) * 100);
+                    const color = this.colors[key];
+                    const label = I18n.t(this.labels[key]);
+                    
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="font-bold" style="color:${color}">${label}</span>
+                            <span class="sys-font font-bold text-[var(--sys-text)]">${val}</span>
+                        </div>
+                        <div class="attr-bar-bg">
+                            <div class="attr-bar-fill" style="width:${pct}%; background:${color}; box-shadow: 0 0 8px ${color}"></div>
+                        </div>
+                    `;
+                    c.appendChild(div);
+                });
+            }
+        };
+
+        // ==================== SKILLS SYSTEM ====================
+        const SkillsSystem = {
+            unlocked: [],
+            
+            init() {
+                const saved = localStorage.getItem('SL_SYS_SKILLS');
+                if (saved) this.unlocked = JSON.parse(saved);
+                this.render();
+            },
+            
+            checkUnlocks(level) {
+                const newSkills = SkillsDB.filter(s => s.level <= level && !this.unlocked.includes(s.id));
+                newSkills.forEach(s => {
+                    this.unlocked.push(s.id);
+                    this.showUnlock(s);
+                });
+                if (newSkills.length > 0) {
+                    localStorage.setItem('SL_SYS_SKILLS', JSON.stringify(this.unlocked));
+                    this.render();
+                }
+                return newSkills;
+            },
+            
+            showUnlock(skill) {
+                const box = document.getElementById('unlockedSkillBox');
+                const name = document.getElementById('unlockedSkillName');
+                if (box && name) {
+                    name.textContent = I18n.isAr() ? skill.nameAr : skill.name;
+                    box.classList.remove('hidden');
+                }
+            },
+            
+            render() {
+                const c = document.getElementById('skillsContainer');
+                if (!c) return;
+                c.innerHTML = '';
+                
+                SkillsDB.forEach(skill => {
+                    const isUnlocked = this.unlocked.includes(skill.id);
+                    const currentLevel = LevelSystem.getLevel();
+                    const div = document.createElement('div');
+                    div.className = `skill-card p-3 rounded ${isUnlocked ? 'unlocked' : ''}`;
+                    
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-bold text-sm ${isUnlocked ? 'text-[var(--sys-cyan)]' : 'text-[var(--sys-text-muted)]'}">
+                                ${I18n.isAr() ? skill.nameAr : skill.name}
+                            </span>
+                            <span class="sys-font text-[10px] ${isUnlocked ? 'text-emerald-400' : 'text-slate-600'}">
+                                ${isUnlocked ? 'UNLOCKED' : `LV.${skill.level}`}
+                            </span>
+                        </div>
+                        <div class="text-[10px] text-[var(--sys-text-muted)] leading-relaxed">
+                            ${I18n.isAr() ? skill.desc : skill.descEn}
+                        </div>
+                    `;
+                    c.appendChild(div);
+                });
+            }
+        };
+
+        // ==================== SOUND EFFECTS ====================
+        const SoundEffects = {
+            synth: null,
+            epicSynth: null,
+            alarmSynth: null,
+            
+            init() {
+                this.synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                this.epicSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                this.alarmSynth = new Tone.Synth({
+                    oscillator: { type: "square" },
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 }
+                }).toDestination();
+                
+                this.synth.set({ envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 1 }, oscillator: { type: "square" }, volume: -8 });
+                this.epicSynth.set({ envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 3 }, oscillator: { type: "sawtooth" }, volume: -4 });
+            },
+
+            async ensureAudio() {
+                if (Tone.context.state !== 'running') await Tone.start();
+            },
+
+            async playSystemClick() {
+                await this.ensureAudio();
+                this.synth.triggerAttackRelease("E5", "16n", undefined, 0.3);
+            },
+
+            async playSuccess() {
+                await this.ensureAudio();
+                const now = Tone.now();
+                this.synth.triggerAttackRelease("A4", "16n", now, 0.4);
+                this.synth.triggerAttackRelease("E5", "8n", now + 0.1, 0.6);
+            },
+
+            async playLevelUp() {
+                await this.ensureAudio();
+                const now = Tone.now();
+                this.epicSynth.triggerAttackRelease(["A3", "E4", "A4"], "4n", now);
+                this.epicSynth.triggerAttackRelease(["C4", "G4", "C5"], "4n", now + 0.3);
+                this.epicSynth.triggerAttackRelease(["E3", "B3", "E4", "G4", "B4"], "1m", now + 0.6);
+            },
+
+            async playAlarm() {
+                await this.ensureAudio();
+                const now = Tone.now();
+                // Repeated alarm pattern
+                for (let i = 0; i < 5; i++) {
+                    this.alarmSynth.triggerAttackRelease("C6", "8n", now + i * 0.3);
+                    this.alarmSynth.triggerAttackRelease("E6", "8n", now + i * 0.3 + 0.15);
+                }
+            }
+        };
+
+        // ==================== LEVEL SYSTEM ====================
+        const LevelSystem = {
+            calculateProgress(totalXp) {
+                let level = 1; 
+                let currentThreshold = 100; 
+                let cumulativeXpRequired = currentThreshold;
+                while (totalXp >= cumulativeXpRequired) {
+                    level++; 
+                    currentThreshold = Math.floor(currentThreshold * 1.15); 
+                    cumulativeXpRequired += currentThreshold;
+                }
+                const xpForPreviousLevels = cumulativeXpRequired - currentThreshold;
+                const xpInCurrentLevel = totalXp - xpForPreviousLevels;
+                return { 
+                    level, 
+                    currentLevelXp: xpInCurrentLevel, 
+                    xpRequiredForNext: currentThreshold, 
+                    progressPercentage: Math.min(100, (xpInCurrentLevel / currentThreshold) * 100) 
+                };
+            },
+            getLevel() {
+                const xp = parseInt(localStorage.getItem('SL_SYS_XP')) || 0;
+                return this.calculateProgress(xp).level;
+            }
+        };
+
+        // ==================== STATE ====================
+        const State = {
+            tasks: JSON.parse(localStorage.getItem('SL_SYS_TASKS')) || [],
+            xp: parseInt(localStorage.getItem('SL_SYS_XP')) || 0,
+            view: 'all',
+            weights: { high: 50, medium: 30, low: 10 },
+            lang: localStorage.getItem('SL_SYS_LANG') || 'ar',
+            theme: localStorage.getItem('SL_SYS_THEME') || 'dark',
+
+            save() {
+                localStorage.setItem('SL_SYS_TASKS', JSON.stringify(this.tasks));
+                localStorage.setItem('SL_SYS_XP', this.xp.toString());
+                UI.refresh();
+            }
+        };
+
+        // ==================== I18N ====================
+        const I18n = {
+            t(key) {
+                return i18n[State.lang]?.[key] || key;
+            },
+            isAr() {
+                return State.lang === 'ar';
+            },
+            apply() {
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (i18n[State.lang]?.[key]) {
+                        el.textContent = i18n[State.lang][key];
+                    }
+                });
+                document.documentElement.lang = State.lang;
+                document.documentElement.dir = State.lang === 'ar' ? 'rtl' : 'ltr';
+            }
+        };
+
+        // ==================== SYSTEM CONTROLS ====================
+        const SystemControls = {
+            init() {
+                // Apply saved theme
+                if (State.theme === 'light') {
+                    document.body.classList.add('light-mode');
+                    document.getElementById('themeIcon').textContent = '☀️';
+                }
+                // Apply saved lang
+                I18n.apply();
+                document.getElementById('langIcon').textContent = State.lang === 'ar' ? 'EN' : 'AR';
+            },
+            
+            toggleTheme() {
+                SoundEffects.playSystemClick();
+                document.body.classList.toggle('light-mode');
+                State.theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+                localStorage.setItem('SL_SYS_THEME', State.theme);
+                document.getElementById('themeIcon').textContent = State.theme === 'light' ? '☀️' : '🌙';
+            },
+            
+            toggleLang() {
+                SoundEffects.playSystemClick();
+                State.lang = State.lang === 'ar' ? 'en' : 'ar';
+                localStorage.setItem('SL_SYS_LANG', State.lang);
+                document.getElementById('langIcon').textContent = State.lang === 'ar' ? 'EN' : 'AR';
+                I18n.apply();
+                UI.refresh();
+                SkillsSystem.render();
+                AttributesSystem.render();
+            }
+        };
+
+        // ==================== MILESTONE ====================
+        const Milestone = {
+            messages: WisdomFragments.map((w, i) => `[SYSTEM Lv.${(i+1)*5}] ${w.ar}`),
+            
+            check(oldLevel, newLevel) {
+                if (newLevel > oldLevel) { 
+                    const newSkills = SkillsSystem.checkUnlocks(newLevel);
+                    this.show(newLevel, oldLevel, newSkills.length > 0); 
+                }
+            },
+            
+            show(level, oldLevel, hasSkill = false) {
+                SoundEffects.playLevelUp();
+                confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 }, colors: ['#00f0ff', '#9d4edd', '#ffffff'] });
+                
+                document.getElementById('milestoneOldLevel').textContent = oldLevel;
+                document.getElementById('milestoneLevelText').textContent = level;
+                
+                const msgIndex = Math.min(this.messages.length - 1, Math.floor((level - 1) / 5));
+                document.getElementById('milestoneMessage').textContent = this.messages[msgIndex] || this.messages[0];
+                
+                if (!hasSkill) {
+                    document.getElementById('unlockedSkillBox').classList.add('hidden');
+                }
+                
+                document.getElementById('milestoneModal').classList.remove('hidden');
+            },
+            
+            hide() {
+                SoundEffects.playSystemClick();
+                document.getElementById('milestoneModal').classList.add('hidden');
+            }
+        };
+
+        // ==================== TOAST ====================
+        const Toast = {
+            show(title, body, duration = 5000) {
+                const toast = document.getElementById('toast');
+                document.getElementById('toastTitle').textContent = title;
+                document.getElementById('toastBody').textContent = body;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), duration);
+            }
+        };
+
+        // ==================== WEATHER & LOCATION ====================
+        const Weather = {
+            init() {
+                this.updateTime(); 
+                setInterval(() => this.updateTime(), 1000);
+                this.fetchWeather(); 
+                setInterval(() => this.fetchWeather(), 30 * 60 * 1000);
+                this.getLocation();
+            },
+            
+            updateTime() {
+                const now = new Date();
+                document.getElementById('realTime').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+                document.getElementById('realDate').textContent = now.toLocaleDateString('en-GB');
+                
+                const m = now.getMonth() + 1; 
+                let s = "", i = "";
+                if (m >= 3 && m <= 5) { s = I18n.isAr() ? "الربيع" : "Spring"; i = "🌸"; } 
+                else if (m >= 6 && m <= 8) { s = I18n.isAr() ? "الصيف" : "Summer"; i = "☀️"; } 
+                else if (m >= 9 && m <= 11) { s = I18n.isAr() ? "الخريف" : "Autumn"; i = "🍂"; } 
+                else { s = I18n.isAr() ? "الشتاء" : "Winter"; i = "❄️"; }
+                
+                document.getElementById('seasonText').textContent = s; 
+                document.getElementById('seasonIcon').textContent = i;
+            },
+            
+            async fetchWeather() {
+                try {
+                    // Default to Algeria coordinates if no geolocation
+                    let lat = 34.6667, lon = 3.2500;
+                    const pos = localStorage.getItem('SL_SYS_POS');
+                    if (pos) {
+                        const p = JSON.parse(pos);
+                        lat = p.lat; lon = p.lon;
+                    }
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m`);
+                    const d = await res.json();
+                    if (d.current) {
+                        document.getElementById('weatherTemp').textContent = `${Math.round(d.current.temperature_2m)}°C`;
+                        document.getElementById('weatherHum').textContent = `${Math.round(d.current.relative_humidity_2m)}%`;
+                    }
+                } catch (e) { console.error(e); }
+            },
+            
+            getLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const pos = { lat: position.coords.latitude, lon: position.coords.longitude };
+                            localStorage.setItem('SL_SYS_POS', JSON.stringify(pos));
+                            this.fetchWeather();
+                            this.reverseGeocode(pos.lat, pos.lon);
+                        },
+                        () => {
+                            document.getElementById('locationText').textContent = I18n.isAr() ? 'المسيلة، الجزائر' : "M'sila, Algeria";
+                        }
+                    );
+                }
+            },
+            
+            async reverseGeocode(lat, lon) {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=${State.lang}`);
+                    const d = await res.json();
+                    if (d.address) {
+                        const city = d.address.city || d.address.town || d.address.village || d.address.county || 'Unknown';
+                        const country = d.address.country || '';
+                        document.getElementById('locationText').textContent = `${city}, ${country}`;
+                    }
+                } catch (e) {
+                    document.getElementById('locationText').textContent = I18n.isAr() ? 'المسيلة، الجزائر' : "M'sila, Algeria";
+                }
+            }
+        };
+
+        // ==================== ALARM SYSTEM ====================
+        const Alarm = {
+            alarms: JSON.parse(localStorage.getItem('SL_SYS_ALARMS')) || [],
+            checkInterval: null,
+            
+            init() {
+                this.renderList();
+                this.checkInterval = setInterval(() => this.checkAlarms(), 1000);
+            },
+            
+            add() {
+                SoundEffects.playSystemClick();
+                const time = document.getElementById('alarmTimeInput').value;
+                const label = document.getElementById('alarmLabelInput').value || I18n.t('alarmSystem');
+                if (!time) return;
+                
+                this.alarms.push({ id: Date.now(), time, label, active: true });
+                this.save();
+                this.renderList();
+                document.getElementById('alarmLabelInput').value = '';
+                Toast.show('SYSTEM', I18n.isAr() ? `تم تعيين منبه جديد: ${time}` : `New alarm set: ${time}`);
+            },
+            
+            delete(id) {
+                SoundEffects.playSystemClick();
+                this.alarms = this.alarms.filter(a => a.id !== id);
+                this.save();
+                this.renderList();
+            },
+            
+            toggle(id) {
+                SoundEffects.playSystemClick();
+                const alarm = this.alarms.find(a => a.id === id);
+                if (alarm) {
+                    alarm.active = !alarm.active;
+                    this.save();
+                    this.renderList();
+                }
+            },
+            
+            save() {
+                localStorage.setItem('SL_SYS_ALARMS', JSON.stringify(this.alarms));
+                this.updateDisplay();
+            },
+            
+            checkAlarms() {
+                const now = new Date();
+                const currentTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                
+                this.alarms.forEach(alarm => {
+                    if (alarm.active && alarm.time === currentTime && now.getSeconds() === 0) {
+                        this.trigger(alarm);
+                    }
+                });
+            },
+            
+            trigger(alarm) {
+                SoundEffects.playAlarm();
+                Toast.show('⏰ SYSTEM ALARM', alarm.label, 10000);
+                document.getElementById('timerContainer').classList.add('alarm-active');
+                setTimeout(() => {
+                    document.getElementById('timerContainer').classList.remove('alarm-active');
+                }, 5000);
+            },
+            
+            updateDisplay() {
+                const active = this.alarms.filter(a => a.active);
+                const display = document.getElementById('nextAlarmDisplay');
+                const status = document.getElementById('alarmStatus');
+                
+                if (active.length === 0) {
+                    display.textContent = I18n.t('noAlarm');
+                    status.textContent = 'OFF';
+                    status.className = 'sys-font text-[9px] px-2 py-0.5 bg-slate-800 border border-slate-600 text-slate-300 uppercase';
+                } else {
+                    // Sort by time
+                    active.sort((a, b) => a.time.localeCompare(b.time));
+                    display.textContent = `${active[0].time} - ${active[0].label}`;
+                    status.textContent = 'ARMED';
+                    status.className = 'sys-font text-[9px] px-2 py-0.5 bg-emerald-900 border border-emerald-600 text-emerald-300 uppercase animate-pulse';
+                }
+            },
+            
+            renderList() {
+                const c = document.getElementById('alarmList');
+                if (!c) return;
+                c.innerHTML = '';
+                
+                if (this.alarms.length === 0) {
+                    c.innerHTML = `<div class="text-center text-[var(--sys-text-muted)] text-sm py-4">${I18n.isAr() ? 'لا يوجد منبهات' : 'No alarms set'}</div>`;
+                } else {
+                    this.alarms.forEach(alarm => {
+                        const div = document.createElement('div');
+                        div.className = 'alarm-item';
+                        div.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <span class="sys-font font-bold text-lg ${alarm.active ? 'text-rose-400' : 'text-slate-600'}">${alarm.time}</span>
+                                <span class="text-sm text-[var(--sys-text)]">${alarm.label}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="Alarm.toggle(${alarm.id})" class="w-8 h-8 flex items-center justify-center border ${alarm.active ? 'border-emerald-500 text-emerald-400' : 'border-slate-600 text-slate-500'}">
+                                    ${alarm.active ? '✓' : '○'}
+                                </button>
+                                <button onclick="Alarm.delete(${alarm.id})" class="w-8 h-8 flex items-center justify-center border border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors">×</button>
+                            </div>
+                        `;
+                        c.appendChild(div);
+                    });
+                }
+                this.updateDisplay();
+            },
+            
+            togglePanel() {
+                SoundEffects.playSystemClick();
+                document.getElementById('alarmModal').classList.toggle('hidden');
+            }
+        };
+
+        // ==================== UI ====================
+        const UI = {
+            refresh() { 
+                this.renderTasks(); 
+                this.updateStats(); 
+                this.updateCounters(); 
+            },
+            
+            renderTasks() {
+                const c = document.getElementById('taskContainer'); 
+                if (!c) return; 
+                c.innerHTML = '';
+                const f = State.tasks.filter(t => State.view === 'active' ? !t.completed : true);
+                
+                if (f.length === 0) {
+                    c.innerHTML = `<div class="text-center py-10 opacity-30 sys-font"><p>[${I18n.t('noActiveQuests')}]</p></div>`; 
+                    return;
+                }
+
+                f.forEach(task => {
+                    const el = document.createElement('div');
+                    el.className = `task-card sl-panel p-4 flex items-center gap-4 ${task.completed ? 'completed' : ''}`;
+                    let pColor = task.priority === 'high' ? '#e11d48' : task.priority === 'medium' ? '#f59e0b' : '#10b981';
+                    
+                    el.innerHTML = `
+                        <button onclick="Actions.toggleTask(${task.id})" class="w-8 h-8 flex items-center justify-center border border-rose-500 hover:bg-rose-500 hover:bg-opacity-20 transition-all sys-font text-white">
+                            ${task.completed ? '✓' : ''}
+                        </button>
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-lg ${task.completed ? 'line-through text-slate-500' : 'text-[var(--sys-text)]'}">${this.escape(task.text)}</h3>
+                            <div class="flex gap-4 mt-1 sys-font text-[10px] tracking-widest uppercase">
+                                <span style="color:${pColor}">[${I18n.t('rank')}: ${task.priority.charAt(0).toUpperCase()}]</span>
+                                <span class="text-[var(--sys-purple)]">+${State.weights[task.priority]} ${I18n.t('exp')}</span>
+                            </div>
+                        </div>
+                        <button onclick="Actions.deleteTask(${task.id})" class="text-slate-600 hover:text-rose-500 transition-colors text-xl">🗑️</button>
+                    `;
+                    c.appendChild(el);
+                });
+            },
+            
+            updateStats() {
+                const tot = State.tasks.reduce((a, t) => a + State.weights[t.priority], 0);
+                const comp = State.tasks.filter(t => t.completed).reduce((a, t) => a + State.weights[t.priority], 0);
+                const pct = tot === 0 ? 0 : Math.round((comp / tot) * 100);
+                const prg = LevelSystem.calculateProgress(State.xp);
+
+                document.getElementById('stat-weight').textContent = comp; 
+                document.getElementById('stat-percent').textContent = `${pct}%`; 
+                document.getElementById('stat-xp').textContent = State.xp;
+                document.getElementById('currentLevel').textContent = prg.level; 
+                document.getElementById('xpText').textContent = `${prg.currentLevelXp} / ${prg.xpRequiredForNext}`;
+                document.getElementById('xpBar').style.width = `${prg.progressPercentage}%`;
+            },
+            
+            updateCounters() {
+                document.getElementById('cnt-all').textContent = State.tasks.length; 
+                document.getElementById('cnt-active-val').textContent = State.tasks.filter(t => !t.completed).length;
+            },
+            
+            toggleTimerSettings() { 
+                SoundEffects.playSystemClick(); 
+                document.getElementById('timerModal').classList.toggle('hidden'); 
+            },
+            
+            escape(str) { 
+                const d = document.createElement('div'); 
+                d.textContent = str; 
+                return d.innerHTML; 
+            }
+        };
+
+        // ==================== ACTIONS ====================
+        const Actions = {
+            addTask() {
+                SoundEffects.playSystemClick();
+                const inp = document.getElementById('taskInput'); 
+                const prio = document.getElementById('prioritySelect').value;
+                if (!inp.value.trim()) return;
+                
+                State.tasks.unshift({ 
+                    id: Date.now(), 
+                    text: inp.value, 
+                    priority: prio, 
+                    completed: false 
+                });
+                
+                inp.value = ''; 
+                State.save();
+                Toast.show('SYSTEM', I18n.isAr() ? 'تم إضافة مهمة الزعيم بنجاح' : 'Boss Quest added successfully');
+            },
+            
+            toggleTask(id) {
+                const t = State.tasks.find(x => x.id === id);
+                if (t) {
+                    const o = LevelSystem.calculateProgress(State.xp);
+                    t.completed = !t.completed;
+                    
+                    if (t.completed) { 
+                        State.xp += State.weights[t.priority]; 
+                        SoundEffects.playSuccess(); 
+                        AttributesSystem.addPoints(t.priority);
+                        
+                        // Show random wisdom fragment
+                        const frag = WisdomFragments[Math.floor(Math.random() * WisdomFragments.length)];
+                        setTimeout(() => {
+                            Toast.show('WISDOM FRAGMENT', I18n.isAr() ? frag.ar : frag.en, 8000);
+                        }, 500);
+                    } else { 
+                        State.xp = Math.max(0, State.xp - State.weights[t.priority]); 
+                        SoundEffects.playSystemClick(); 
+                    }
+                    
+                    State.save();
+                    if (t.completed) { 
+                        const n = LevelSystem.calculateProgress(State.xp); 
+                        Milestone.check(o.level, n.level); 
+                    }
+                }
+            },
+            
+            deleteTask(id) { 
+                SoundEffects.playSystemClick(); 
+                State.tasks = State.tasks.filter(t => t.id !== id); 
+                State.save(); 
+            }
+        };
+
+        // ==================== QUOTES ====================
+        const Quotes = {
+            index: 0,
+            init() { 
+                this.next(); 
+                setInterval(() => this.next(), 30000); 
+            },
+            next() {
+                this.index = (this.index + 1) % WisdomFragments.length; 
+                const el = document.getElementById('motivationalQuote');
+                if (el) { 
+                    el.style.opacity = '0'; 
+                    setTimeout(() => { 
+                        el.textContent = I18n.isAr() ? WisdomFragments[this.index].ar : WisdomFragments[this.index].en; 
+                        el.style.opacity = '1'; 
+                    }, 500); 
+                }
+            }
+        };
+
+        // ==================== ROUTER ====================
+        const Router = {
+            navigate(view) {
+                SoundEffects.playSystemClick();
+                State.view = view;
+                
+                ['all', 'active', 'charter'].forEach(v => {
+                    const b = document.getElementById(`nav-${v}`);
+                    if(b) { 
+                        b.classList.remove('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border', 'bg-[var(--sys-purple)]', 'bg-opacity-20', 'text-white', 'border-[var(--sys-purple)]'); 
+                        b.classList.add('text-[var(--sys-text-muted)]'); 
+                    }
+                });
+                
+                const btn = document.getElementById(`nav-${view}`);
+                
+                if(view === 'charter') {
+                    btn.classList.add('bg-[var(--sys-purple)]', 'bg-opacity-20', 'text-white', 'border', 'border-[var(--sys-purple)]');
+                    document.getElementById('tasksView').classList.add('hidden');
+                    document.getElementById('charterView').classList.remove('hidden');
+                    document.getElementById('charterView').classList.add('flex');
+                    document.getElementById('statsSection').classList.add('hidden');
+                } else {
+                    btn.classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border');
+                    document.getElementById('tasksView').classList.remove('hidden');
+                    document.getElementById('charterView').classList.add('hidden');
+                    document.getElementById('charterView').classList.remove('flex');
+                    document.getElementById('statsSection').classList.remove('hidden');
+                    UI.refresh();
+                }
+            }
+        };
+
+        // ==================== POMODORO ====================
+        const Pomodoro = {
+            defaultTime: parseInt(localStorage.getItem('SL_SYS_TIMER')) || (5 * 3600),
+            timeLeft: 0, 
+            timer: null, 
+            isRunning: false,
+            
+            init() { 
+                this.timeLeft = this.defaultTime; 
+                this.updateUI(); 
+            },
+            
+            saveSettings() {
+                const h = parseInt(document.getElementById('inputHours').value) || 0; 
+                const m = parseInt(document.getElementById('inputMinutes').value) || 0;
+                const tot = (h * 3600) + (m * 60);
+                if (tot > 0) {
+                    this.defaultTime = tot; 
+                    localStorage.setItem('SL_SYS_TIMER', this.defaultTime.toString());
+                    UI.toggleTimerSettings(); 
+                    clearInterval(this.timer); 
+                    this.timeLeft = this.defaultTime; 
+                    this.isRunning = false; 
+                    this.toggle();
+                }
+            },
+            
+            toggle() {
+                SoundEffects.playSystemClick(); 
+                const btn = document.getElementById('timerBtn'); 
+                const st = document.getElementById('timerStatus');
+                if (this.isRunning) {
+                    clearInterval(this.timer); 
+                    btn.textContent = '▶️'; 
+                    btn.classList.remove('bg-rose-600/30'); 
+                    st.textContent = 'PAUSED'; 
+                    st.className = 'sys-font text-[9px] px-2 py-0.5 bg-amber-900 border border-amber-600 text-amber-300 uppercase';
+                } else {
+                    if (this.timeLeft <= 0) this.timeLeft = this.defaultTime;
+                    this.timer = setInterval(() => { 
+                        if (this.timeLeft > 0) { 
+                            this.timeLeft--; 
+                            this.updateUI(); 
+                        } else { 
+                            this.finish(); 
+                        } 
+                    }, 1000);
+                    btn.textContent = '⏸️'; 
+                    btn.classList.add('bg-rose-600/30'); 
+                    st.textContent = 'IN COMBAT'; 
+                    st.className = 'sys-font text-[9px] px-2 py-0.5 bg-rose-900 border border-rose-600 text-rose-300 uppercase animate-pulse';
+                }
+                this.isRunning = !this.isRunning;
+            },
+            
+            reset() {
+                SoundEffects.playSystemClick(); 
+                clearInterval(this.timer); 
+                this.timeLeft = this.defaultTime; 
+                this.isRunning = false;
+                const btn = document.getElementById('timerBtn'); 
+                btn.textContent = '▶️'; 
+                btn.classList.remove('bg-rose-600/30');
+                const st = document.getElementById('timerStatus'); 
+                st.textContent = 'IDLE'; 
+                st.className = 'sys-font text-[9px] px-2 py-0.5 bg-slate-800 border border-slate-600 text-slate-300 uppercase';
+                this.updateUI();
+            },
+            
+            finish() { 
+                clearInterval(this.timer); 
+                SoundEffects.playSuccess(); 
+                confetti({ particleCount: 100, colors: ['#00f0ff'] }); 
+                Toast.show('SYSTEM', I18n.isAr() ? 'انتهى وقت المهمة! استراحة مقاتل.' : 'Quest time complete! Fighter rest.'); 
+                this.reset(); 
+            },
+            
+            updateUI() {
+                const h = Math.floor(this.timeLeft / 3600).toString().padStart(2, '0'); 
+                const m = Math.floor((this.timeLeft % 3600) / 60).toString().padStart(2, '0'); 
+                const s = (this.timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('timerDisplay').textContent = `${h}:${m}:${s}`;
+            }
+        };
+
+        // ==================== INIT ====================
+        window.addEventListener('DOMContentLoaded', () => {
+            SoundEffects.init(); 
+            SystemControls.init();
+            Pomodoro.init(); 
+            UI.refresh(); 
+            Quotes.init(); 
+            Weather.init();
+            AttributesSystem.init();
+            SkillsSystem.init();
+            Alarm.init();
+            
+            const h = new Date().getHours(); 
+            document.getElementById('greetingText').textContent = h < 12 ? (I18n.isAr() ? 'صباح السيادة أيها العاهل..' : 'Good morning, Monarch...') : (I18n.isAr() ? 'مساء الهيمنة أيها العاهل..' : 'Good evening, Monarch...');
+            
+            document.getElementById('taskInput').addEventListener('keypress', e => { 
+                if (e.key === 'Enter') Actions.addTask(); 
+            });
+            
+            document.getElementById('nav-all').classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border');
+        });
+    </script>
+</body>
+</html>
